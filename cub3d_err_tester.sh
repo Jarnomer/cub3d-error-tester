@@ -116,17 +116,6 @@ run_cubed() {
 	message_checker
 }
 
-insert_map_elements() {
-${ECHO} 'NO '${MYTEXDIR}${MYTEXNO}'
-SO '${MYTEXDIR}${MYTEXSO}'
-WE '${MYTEXDIR}${MYTEXWE}'
-EA '${MYTEXDIR}${MYTEXEA}'
-
-F 225,30,0
-C 225,30,0
-' > ${MAP}
-}
-
 CNTR=1
 ERR=Error
 RM="rm -rf"
@@ -261,7 +250,7 @@ C 225,30,0
 
 print_title ${CNTR} "File is folder"
 mkdir ${MYTEXDIR}${DIR}${FILETYPE}
-texture_test "NO ${MYTEXDIR}${DIR}.png"
+texture_test "NO ${MYTEXDIR}${DIR}${FILETYPE}"
 run_cubed
 ${RM} ${MYTEXDIR}${DIR}${FILETYPE}
 
@@ -271,7 +260,7 @@ run_cubed
 
 print_title ${CNTR} "File has no name"
 mv ${MYTEXDIR}${TEX} ${MYTEXDIR}${FILETYPE}
-texture_test "NO ${MYTEXDIR}.png"
+texture_test "NO ${MYTEXDIR}${FILETYPE}"
 run_cubed
 mv ${MYTEXDIR}${FILETYPE} ${MYTEXDIR}${TEX}
 
@@ -383,6 +372,26 @@ print_end
 # MAP PARSING TESTS
 # =========================================================
 
+insert_map_elements() {
+${ECHO} 'NO '${MYTEXDIR}${MYTEXNO}'
+SO '${MYTEXDIR}${MYTEXSO}'
+WE '${MYTEXDIR}${MYTEXWE}'
+EA '${MYTEXDIR}${MYTEXEA}'
+
+F 225,30,0
+C 225,30,0
+' > ${MAP}
+}
+
+misc_test() {
+insert_map_elements
+${ECHO} '
+'$1'
+'$2'
+'$3'
+'$4'' >> ${MAP}
+}
+
 map_test() {
 insert_map_elements
 ${ECHO} '
@@ -407,25 +416,16 @@ ${ECHO} '
 1' >> ${MAP}
 }
 
-misc_test() {
-insert_map_elements
-${ECHO} '
-'$1'
-'$2'
-'$3'
-'$4'' >> ${MAP}
-}
-
 print_header "MAP PARSING TESTS"
 CNTR=1
 
 print_title ${CNTR} "Invalid dimension"
 #		   $1   $2   $3   $4
-misc_test '11' '11' '11' '11'
+misc_test '11' 'N1' '11' '11'
 run_cubed
 
 print_title ${CNTR} "Invalid dimension"
-misc_test '' '' '111111' '111111'
+misc_test '' '' '1111' '11N1'
 run_cubed
 
 print_title ${CNTR} "Invalid dimension"
