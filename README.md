@@ -36,8 +36,8 @@ For colors
 
 For map
 - Map does not exist
-- Invalid dimensions
-- Empty lines
-- No closed walls
-- No or too many player(s)
-- Invalid characters
+- Map has invalid dimensions
+- Map has empty lines
+- Map has no properly closed walls
+- Map has no or too many player(s)
+- Map has invalid characters
