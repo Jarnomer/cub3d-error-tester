@@ -16,7 +16,7 @@ For cub file
 - File is empty
 
 For cub file / textures
-- Argument given is folder
+- Argument is folder
 - File does not exist
 - File has no name
 - File has no extension
