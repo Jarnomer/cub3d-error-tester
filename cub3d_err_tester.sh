@@ -10,6 +10,8 @@ MYTEXEA="wall_east.png"			#East wall texture
 FILETYPE=.png					#Filetype of textures (xpm/png)
 # =========================================================
 
+# FORMATTING
+# =========================================================
 R="\033[0;31m"	# Red
 G="\033[0;32m"	# Green
 Y="\033[0;33m"	# yellow
@@ -27,6 +29,18 @@ CB="\033[1;36m"
 RC="\033[0m" 	# Reset Color
 FLL="========================="
 FLLTITLE="========================"
+# =========================================================
+
+CNTR=1
+ERR=Error
+RM="rm -rf"
+ECHO="echo -n"
+NAME=cub3D
+BINPATH=./
+DIR=tmp_tst_dir
+MAP=tmp_tst_map
+TEX=tmp_tst_tex
+LOG=errtest.log
 
 print_test_description() {
 	printf "\n${BB}TEST $1:${RC} ${C}$2${RC}    \t"
@@ -50,6 +64,8 @@ print_main_title() {
 	printf "\n${BB}MESSAGE: \t${RC}Tests that error message included 'Error' and
 \t\twas followed by your explicit error message\n\n"
 	printf "${P}${FLLTITLE}${FLLTITLE}${FLLTITLE}${RC}\n"
+	echo
+	read -p "Continue?" -n 1 -r
 }
 
 print_test_continue() {
@@ -57,18 +73,6 @@ print_test_continue() {
 	printf "${GB}\nALL TESTS FINISHED!\n${RC}"
 	echo
 	read -p "Continue?" -n 1 -r
-}
-
-delete_test_files() {
-	${RM} ${DIR} ${MAP} ${LOG}
-	${RM} ${MYTEXDIR}${TEX}
-	${RM} ${MYTEXDIR}${TEX}${FILETYPE}
-}
-
-trap handle_ctrlc SIGINT
-handle_ctrlc() {
-	delete_test_files
-	exit
 }
 
 message_checker() {
@@ -120,20 +124,20 @@ run_cubed_with_args() {
 	message_checker
 }
 
-CNTR=1
-ERR=Error
-RM="rm -rf"
-ECHO="echo -n"
-NAME=cub3D
-BINPATH=./
-DIR=tmp_tst_dir
-MAP=tmp_tst_map
-TEX=tmp_tst_tex
-LOG=errtest.log
+delete_test_files() {
+	${RM} ${DIR} ${MAP} ${LOG}
+	${RM} ${MYTEXDIR}${TEX}
+	${RM} ${MYTEXDIR}${TEX}${FILETYPE}
+}
+
+trap handle_ctrlc SIGINT
+handle_ctrlc() {
+	delete_test_files
+	exit
+}
 
 if [ -f "$NAME" ]; then
 	print_main_title
-	print_test_continue
 else
 	printf "${RB}Error: ${RC}${Y}binary <$NAME> not found${RC}"
 	exit
