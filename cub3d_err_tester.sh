@@ -132,12 +132,10 @@ TEX=tmp_tst_tex
 LOG=errtest.log
 
 if [ -f "$NAME" ]; then
-	touch ${MAP}
 	print_main_title
 	print_test_continue
 else
 	printf "${RB}Error: ${RC}${Y}binary <$NAME> not found${RC}"
-	${RM} ${MAP} ${LOG}
 	exit
 fi
 
