@@ -7,7 +7,7 @@ MYTEXNO="wall_north.png"		#North wall texture
 MYTEXSO="wall_south.png"		#South wall texture
 MYTEXWE="wall_west.png"			#West wall texture
 MYTEXEA="wall_east.png"			#East wall texture
-FILETYPE=.png					#Filetype of textures (xmp/png)
+FILETYPE=.png					#Filetype of textures (xpm/png)
 # =========================================================
 
 R="\033[0;31m"	# Red
@@ -28,12 +28,12 @@ RC="\033[0m" 	# Reset Color
 FLL="========================="
 FLLTITLE="========================"
 
-print_title() {
+print_test_description() {
 	printf "\n${BB}TEST $1:${RC} ${C}$2${RC}    \t"
 	CNTR=$((CNTR+1))
 }
 
-print_header() {
+print_test_header() {
 	printf "\033c" #clear terminal
 	printf "\n${BB}$1${RC}\n"
 	printf "${P}${FLLTITLE}${FLLTITLE}${FLLTITLE}${RC}\n"
@@ -52,20 +52,17 @@ print_main_title() {
 	printf "${P}${FLLTITLE}${FLLTITLE}${FLLTITLE}${RC}\n"
 }
 
-print_continue() {
+print_test_continue() {
+	printf "\n${P}${FLLTITLE}${FLLTITLE}${FLLTITLE}${RC}"
+	printf "${GB}\nALL TESTS FINISHED!\n${RC}"
 	echo
 	read -p "Continue?" -n 1 -r
 }
 
-print_end() {
-	printf "\n${P}${FLLTITLE}${FLLTITLE}${FLLTITLE}${RC}"
-	printf "${GB}\nALL TESTS FINISHED!\n${RC}"
-	print_continue
-}
-
 delete_test_files() {
 	${RM} ${DIR} ${MAP} ${LOG}
-	${RM} ${MYTEXDIR}${TEX} ${MYTEXDIR}${TEX}${FILETYPE}
+	${RM} ${MYTEXDIR}${TEX}
+	${RM} ${MYTEXDIR}${TEX}${FILETYPE}
 }
 
 trap handle_ctrlc SIGINT
@@ -116,6 +113,13 @@ run_cubed() {
 	message_checker
 }
 
+run_cubed_with_args() {
+	${BINPATH}${NAME} $1 $2 > /dev/null 2> ${LOG}
+	exitcode_checker $?
+	stderr_checker
+	message_checker
+}
+
 CNTR=1
 ERR=Error
 RM="rm -rf"
@@ -130,7 +134,7 @@ LOG=errtest.log
 if [ -f "$NAME" ]; then
 	touch ${MAP}
 	print_main_title
-	print_continue
+	print_test_continue
 else
 	printf "${RB}Error: ${RC}${Y}binary <$NAME> not found${RC}"
 	${RM} ${MAP} ${LOG}
@@ -141,7 +145,7 @@ fi
 # FILE READ TESTS
 # =========================================================
 
-print_header "FILE READ TESTS"
+print_test_header "FILE READ TESTS"
 ${ECHO} 'NO '${MYTEXDIR}${MYTEXNO}'
 SO '${MYTEXDIR}${MYTEXSO}'
 WE '${MYTEXDIR}${MYTEXWE}'
@@ -154,83 +158,57 @@ C 225,30,0
 1N1
 111' > ${MAP}
 
-print_title ${CNTR} "Too few arguments"
-${BINPATH}${NAME} > /dev/null 2> ${LOG}
-exitcode_checker $?
-stderr_checker
-message_checker
+print_test_description ${CNTR} "Too few arguments"
+run_cubed_with_args "" ""
 
-print_title ${CNTR} "Too many arguments"
-${BINPATH}${NAME} ${MAP} ${MAP} > /dev/null 2> ${LOG}
-exitcode_checker $?
-stderr_checker
-message_checker
+print_test_description ${CNTR} "Too many arguments"
+run_cubed_with_args ${MAP} ${MAP}
 
-print_title ${CNTR} "Argument is folder"
+print_test_description ${CNTR} "Argument is folder"
 mkdir $DIR.cub
-${BINPATH}${NAME} ${BINPATH}${DIR}.cub > /dev/null 2> ${LOG}
-exitcode_checker $?
-stderr_checker
-message_checker
+run_cubed_with_args ${BINPATH}${DIR}.cub ""
 ${RM} $DIR.cub
 
-print_title ${CNTR} "File does not exist"
-${BINPATH}${NAME} .... > /dev/null 2> ${LOG}
-exitcode_checker $?
-stderr_checker
-message_checker
+print_test_description ${CNTR} "File does not exist"
+run_cubed_with_args .... ""
 
-print_title ${CNTR} "File has no name"
+print_test_description ${CNTR} "File has no name"
 mv ${MAP} .cub
-${BINPATH}${NAME} ${BINPATH}.cub > /dev/null 2> ${LOG}
-exitcode_checker $?
-stderr_checker
-message_checker
+run_cubed_with_args ${BINPATH}.cub ""
 mv .cub ${MAP}
 
-print_title ${CNTR} "No file extension"
-${BINPATH}${NAME} ${MAP} > /dev/null 2> ${LOG}
-exitcode_checker $?
-stderr_checker
-message_checker
+print_test_description ${CNTR} "No file extension"
+run_cubed_with_args ${MAP} ""
 
-print_title ${CNTR} "Bad file extension"
+print_test_description ${CNTR} "Bad file extension"
 mv ${MAP} ${MAP}.cubb
-${BINPATH}${NAME} ${MAP}.cubb > /dev/null 2> ${LOG}
-exitcode_checker $?
-stderr_checker
-message_checker
+run_cubed_with_args ${MAP}.cubb ""
 mv ${MAP}.cubb ${MAP}
 
-print_title ${CNTR} "Bad file extension"
+print_test_description ${CNTR} "Bad file extension"
 mv ${MAP} ${MAP}.ccub
-${BINPATH}${NAME} ${MAP}.ccub > /dev/null 2> ${LOG}
-exitcode_checker $?
-stderr_checker
-message_checker
+run_cubed_with_args ${MAP}.ccub ""
 mv ${MAP}.ccub ${MAP}
 
-# Add .cub extension to test map for running other tests
 mv ${MAP} ${MAP}.cub
 MAP=$(eval ${ECHO} ${MAP}.cub)
-
-print_title ${CNTR} "No read permission"
+print_test_description ${CNTR} "No read permission"
 chmod -r ${MAP}
 run_cubed
 chmod +r ${MAP}
 
-print_title ${CNTR} "File is empty"
+print_test_description ${CNTR} "File is empty"
 ${ECHO} '' > ${MAP}
 run_cubed
 
 delete_test_files
-print_end
+print_test_continue
 
 # =========================================================
 # TEXTURE PARSING TESTS
 # =========================================================
 
-print_header "TEXTURE PARSING TESTS"
+print_test_header "TEXTURE PARSING TESTS"
 cp ${MYTEXDIR}${MYTEXNO} ${MYTEXDIR}${TEX}
 CNTR=1
 
@@ -246,59 +224,50 @@ C 225,30,0
 111
 1N1
 111' > ${MAP}
+run_cubed
 }
 
-print_title ${CNTR} "File is folder"
+print_test_description ${CNTR} "File is folder"
 mkdir ${MYTEXDIR}${DIR}${FILETYPE}
 texture_test "NO ${MYTEXDIR}${DIR}${FILETYPE}"
-run_cubed
 ${RM} ${MYTEXDIR}${DIR}${FILETYPE}
 
-print_title ${CNTR} "File does not exist"
+print_test_description ${CNTR} "File does not exist"
 texture_test "NO ${MYTEXDIR}...."
-run_cubed
 
-print_title ${CNTR} "File has no name"
+print_test_description ${CNTR} "File has no name"
 mv ${MYTEXDIR}${TEX} ${MYTEXDIR}${FILETYPE}
 texture_test "NO ${MYTEXDIR}${FILETYPE}"
-run_cubed
 mv ${MYTEXDIR}${FILETYPE} ${MYTEXDIR}${TEX}
 
-print_title ${CNTR} "No file extension"
+print_test_description ${CNTR} "No file extension"
 texture_test "NO ${MYTEXDIR}${TEX}"
-run_cubed
 
-print_title ${CNTR} "Bad file extension"
+print_test_description ${CNTR} "Bad file extension"
 mv ${MYTEXDIR}${TEX} ${MYTEXDIR}${TEX}${FILETYPE}_
 texture_test "NO ${MYTEXDIR}${TEX}${FILETYPE}_"
-run_cubed
 mv ${MYTEXDIR}${TEX}${FILETYPE}_ ${MYTEXDIR}${TEX}
 
-print_title ${CNTR} "No read permission"
+print_test_description ${CNTR} "No read permission"
 mv ${MYTEXDIR}${TEX} ${MYTEXDIR}${TEX}${FILETYPE}
 chmod -r ${MYTEXDIR}${TEX}${FILETYPE}
 texture_test "NO ${MYTEXDIR}${TEX}${FILETYPE}"
-run_cubed
 chmod +r ${MYTEXDIR}${TEX}${FILETYPE}
 
-print_title ${CNTR} "Invalid separator"
+print_test_description ${CNTR} "Invalid separator"
 texture_test "NO_ ${MYTEXDIR}${MYTEXNO}"
-run_cubed
 
-print_title ${CNTR} "Invalid identifier"
+print_test_description ${CNTR} "Invalid identifier"
 texture_test "No ${MYTEXDIR}${MYTEXNO}"
-run_cubed
 
-print_title ${CNTR} "Same element twice"
+print_test_description ${CNTR} "Same element twice"
 texture_test "SO ${MYTEXDIR}${MYTEXSO}"
-run_cubed
 
-print_title ${CNTR} "Missing element"
+print_test_description ${CNTR} "Missing element"
 texture_test ""
-run_cubed
 
 delete_test_files
-print_end
+print_test_continue
 
 # =========================================================
 # COLOR PARSING TESTS
@@ -316,57 +285,47 @@ C 225,30,0
 111
 1N1
 111' > ${MAP}
+run_cubed
 }
 
-print_header "COLOR PARSING TESTS"
+print_test_header "COLOR PARSING TESTS"
 CNTR=1
 
-print_title ${CNTR} "Too few values"
+print_test_description ${CNTR} "Too few values"
 color_test "F 225,30"
-run_cubed
 
-print_title ${CNTR} "Too many values"
+print_test_description ${CNTR} "Too many values"
 color_test "F 225,30,1,1"
-run_cubed
 
-print_title ${CNTR} "Invalid value"
+print_test_description ${CNTR} "Invalid value"
 color_test "F 225,30,256"
-run_cubed
 
-print_title ${CNTR} "Invalid value"
+print_test_description ${CNTR} "Invalid value"
 color_test "F 225,30,-0"
-run_cubed
 
-print_title ${CNTR} "Invalid value"
+print_test_description ${CNTR} "Invalid value"
 color_test "F _225,30,0"
-run_cubed
 
-print_title ${CNTR} "Extra comma	"
+print_test_description ${CNTR} "Extra comma	"
 color_test "F 225,30,,0"
-run_cubed
 
-print_title ${CNTR} "Extra comma	"
+print_test_description ${CNTR} "Extra comma	"
 color_test "F 225,30,0,"
-run_cubed
 
-print_title ${CNTR} "Invalid separator"
+print_test_description ${CNTR} "Invalid separator"
 color_test "F_ 225,30,0"
-run_cubed
 
-print_title ${CNTR} "Invalid identifier"
+print_test_description ${CNTR} "Invalid identifier"
 color_test "f 225,30,0"
-run_cubed
 
-print_title ${CNTR} "Same element twice"
+print_test_description ${CNTR} "Same element twice"
 color_test "C 225,30,0"
-run_cubed
 
-print_title ${CNTR} "Missing element"
+print_test_description ${CNTR} "Missing element"
 color_test ""
-run_cubed
 
 delete_test_files
-print_end
+print_test_continue
 
 # =========================================================
 # MAP PARSING TESTS
@@ -390,6 +349,7 @@ ${ECHO} '
 '$2'
 '$3'
 '$4'' >> ${MAP}
+run_cubed
 }
 
 map_test() {
@@ -414,68 +374,55 @@ ${ECHO} '
 1
 1
 1' >> ${MAP}
+run_cubed
 }
 
-print_header "MAP PARSING TESTS"
+print_test_header "MAP PARSING TESTS"
 CNTR=1
 
-print_title ${CNTR} "Invalid dimension"
-#		   $1   $2   $3   $4
+print_test_description ${CNTR} "Invalid dimension"
+#          $1   $2   $3   $4
 misc_test '11' 'N1' '11' '11'
-run_cubed
 
-print_title ${CNTR} "Invalid dimension"
+print_test_description ${CNTR} "Invalid dimension"
 misc_test '' '' '1111' '11N1'
-run_cubed
 
-print_title ${CNTR} "Invalid dimension"
+print_test_description ${CNTR} "Invalid dimension"
 misc_test '' '' '1' ''
-run_cubed
 
-print_title ${CNTR} "Empty line	"
+print_test_description ${CNTR} "Empty line	"
 misc_test '111' '1S1' '' '111'
-run_cubed
 
-print_title ${CNTR} "No map exists"
+print_test_description ${CNTR} "No map exists"
 misc_test '' '' '' ''
-run_cubed
 
-print_title ${CNTR} "No player	"
-#		 $1  $2  $3  $4  $5  $6  $7
+print_test_description ${CNTR} "No player	"
+#        $1  $2  $3  $4  $5  $6  $7
 map_test '0' '0' '1' '1' '1' '1' '1'
-run_cubed
 
-print_title ${CNTR} "Two players	"
+print_test_description ${CNTR} "Two players	"
 map_test 'S' 'N' '1' '1' '1' '1' '1'
-run_cubed
 
-print_title ${CNTR} "Invalid character"
+print_test_description ${CNTR} "Invalid character"
 map_test 's' '0' '1' '1' '1' '1' '1'
-run_cubed
 
-print_title ${CNTR} "Invalid character"
+print_test_description ${CNTR} "Invalid character"
 map_test 'S' '2' '1' '1' '1' '1' '1'
-run_cubed
 
-print_title ${CNTR} "No closed walls"
+print_test_description ${CNTR} "No closed walls"
 map_test 'S' '0' '0' '1' '1' '1' '1'
-run_cubed
 
-print_title ${CNTR} "No closed walls"
+print_test_description ${CNTR} "No closed walls"
 map_test 'S' '0' '1' '0' '1' '1' '1'
-run_cubed
 
-print_title ${CNTR} "No closed walls"
+print_test_description ${CNTR} "No closed walls"
 map_test 'S' '0' '1' '1' '0' '1' '1'
-run_cubed
 
-print_title ${CNTR} "No closed walls"
+print_test_description ${CNTR} "No closed walls"
 map_test 'S' '0' '1' '1' '1' '0' '1'
-run_cubed
 
-print_title ${CNTR} "No closed walls"
+print_test_description ${CNTR} "No closed walls"
 map_test 'S' '0' '1' '1' '1' '1' '0'
-run_cubed
 
 delete_test_files
 printf "\n${P}${FLLTITLE}${FLLTITLE}${FLLTITLE}${RC}"
